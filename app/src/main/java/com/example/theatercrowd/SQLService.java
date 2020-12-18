@@ -13,6 +13,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -193,22 +194,23 @@ public class SQLService extends Service {
         long newRowId = db.insert(MOVIECREDITS, null, values);
     }
 
-    public void updateRow(String tableName, String[] columnsToUpdate, String[] valuesToUpdate) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String title = "MyNewTitle";
-        ContentValues values = new ContentValues();
-        values.put(FeedEntry.COLUMN_NAME_TITLE, title);
-
-        // Which row to update, based on the title
-        String selection = FeedEntry.COLUMN_NAME_TITLE + " LIKE ?";
-        String[] selectionArgs = { "MyOldTitle" };
-
-        int count = db.update(
-                tableName,
-                values,
-                selection,
-                selectionArgs);
-    }
+//    public void updateRow(String tableName, String[] columnsToUpdate, String[] valuesToUpdate) {
+//        SQLiteDatabase db = dbHelper.getWritableDatabase();
+//        String title = "MyNewTitle";
+//        ContentValues values = new ContentValues();
+//        //TODO: UNCOMMENT THESE LINES
+////        values.put(FeedEntry.COLUMN_NAME_TITLE, title);
+////
+////        // Which row to update, based on the title
+////        String selection = FeedEntry.COLUMN_NAME_TITLE + " LIKE ?";
+//        String[] selectionArgs = { "MyOldTitle" };
+//
+//        int count = db.update(
+//                tableName,
+//                values,
+//                selection,
+//                selectionArgs);
+//    }
 
     public List<String>[] selectRows(String[] selectQuery) {
         ArrayList <String> projection = new ArrayList<>();
@@ -221,9 +223,11 @@ public class SQLService extends Service {
                 } else {
                     individualValue += selectQuery[1].charAt(i);
                 }
+
             }
             String[] returnColumns = new String[]{};
          returnColumns = projection.toArray(returnColumns);
+         Log.d("Rhino", Arrays.toString(returnColumns));
 
         ArrayList <String> selectionArguments = new ArrayList<>();
         String currentString = "";
@@ -231,19 +235,24 @@ public class SQLService extends Service {
             if(selectQuery[3].charAt(j) == ',') {
                 projection.add(individualValue);
                 currentString = "";
+                Log.d("Rhino", currentString);
                 j++;
             } else {
                 currentString += selectQuery[3].charAt(j);
             }
+
         }
+        selectionArguments.add(currentString);
         String[] selectionArgs = new String[]{};
-        selectionArgs = selectionArguments.toArray(returnColumns);
+        selectionArgs = selectionArguments.toArray(selectionArgs);
+        Log.d("Rhino", Arrays.toString(selectionArgs));
+        Log.d("Rhino", Arrays.toString(returnColumns));
 
 
         Cursor cursor = db.query(
                 selectQuery[0],                         // The tables to query
                 returnColumns,                          // The array of columns to return (pass null to get all)
-                selectQuery[2],                         // The columns for the WHERE clause
+                selectQuery[2] + " = ?",                         // The columns for the WHERE clause
                 selectionArgs,                          // The values for the WHERE clause
                 selectQuery[4],                         // how to group the rows group the rows
                 selectQuery[5],                         // how to filter by row groups
@@ -259,6 +268,11 @@ public class SQLService extends Service {
         List<String>[] queryResults = new List[sizeOfResults];
         cursor.moveToFirst();                                       //Resets the count of the cursor object
         int j = 0;
+        for(k = 0; k < returnColumns.length; k++) {
+            String str = cursor.getString(cursor.getColumnIndexOrThrow(returnColumns[k]));
+            queryResults[j].add(str);
+            j++;
+        }
         while(cursor.moveToNext()) {                                //
             for(k = 0; k < returnColumns.length; k++) {
                 String str = cursor.getString(cursor.getColumnIndexOrThrow(returnColumns[k]));

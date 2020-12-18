@@ -48,8 +48,14 @@ public class MainActivity extends AppCompatActivity {
         String[] statement = createSQLStatement(fragmentManager.getFragments());
         if (statement != null) {
             service = SQLService.getInstance();
-            service.
-            //TODO: Move on to search activity and send this query to the SQLService.
+            service.insertMovies("Top Gun", 1992, "Action", "Fun movie with Tom. yay.");
+
+            List<String>[] values = service.selectRows(statement);
+            for(List<String> list : values) {
+                for (String column : list) {
+                    Log.d("Rhino", column);
+                }
+            }
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
             for(Fragment fragment : manager.getFragments()) {
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             }
             transaction.commitNow();
             Intent intent = new Intent(this, Search.class);
-            intent.putExtra("Query", statement);
+            intent.putExtra("QueryResults", "Coming soon to an app near you.");
             startActivity(intent);
         }
     }
@@ -94,9 +100,14 @@ public class MainActivity extends AppCompatActivity {
                 String[] attributeString = query.getAttributeStrings();
                 for(int j = 0; j < attributeString.length; j++) {
                     if(j % 2 == 0) {
-                        filterColumns += attributeString[j] + ", ";
+                        filterColumns += attributeString[j];
+                        if(j != attributeString.length - 1) {
+                        }
                     } else {
-                        filterValues += attributeString[j] + ", ";
+                        filterValues += attributeString[j];
+                        if(j != attributeString.length - 1) {
+                            filterValues += ", ";
+                        }
                     }
                 }
             }
@@ -109,14 +120,17 @@ public class MainActivity extends AppCompatActivity {
                 String object = iterator.next();
                 switch(object) {
                     case("Person") :
-                        statement += "Name";
-                        otherHalfOfStatement += "Person";
+                        statement += "Name, ";
+                        otherHalfOfStatement += "Person ";
+                        break;
                     case("Movie") :
-                        statement += "Title";
-                        otherHalfOfStatement += "Movie";
+                        statement += "Title, ";
+                        otherHalfOfStatement += "Movie ";
+                        break;
                     case("Award") :
-                        statement += "AwardName";
-                        otherHalfOfStatement += "Award";
+                        statement += "AwardName, ";
+                        otherHalfOfStatement += "Award ";
+                        break;
                 }
                 if (i != objects.size() - 1) {
                     statement += ",";
@@ -125,7 +139,11 @@ public class MainActivity extends AppCompatActivity {
                 statement += " ";
                 otherHalfOfStatement += " ";
             }
-            String[] query = new String[]{statement, otherHalfOfStatement, filterColumns, filterValues};
+            String[] query = new String[]{otherHalfOfStatement, statement, filterColumns, filterValues, null, null, null};
+            Log.d("Rhino", statement);
+            Log.d("Rhino", otherHalfOfStatement);
+            Log.d("Rhino", filterColumns);
+            Log.d("Rhino", filterValues);
             return query;
         }
     }

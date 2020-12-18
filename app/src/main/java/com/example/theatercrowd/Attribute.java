@@ -76,14 +76,14 @@ public class Attribute extends Fragment {
         String[] attributeList = new String[]{};
         switch(objectType) {
             case("Person") :
-                attributeList = new String[]{"p.Name", "p.Birthdate", "p.Nationality"};
+                attributeList = new String[]{"Name", "Birthdate", "Nationality"};
                 break;
             case("Movie") :
-                attributeList = new String[]{"m.Title", "m.ReleaseYear", "m.Genre"};
+                attributeList = new String[]{"Title", "ReleaseYear", "Genre"};
                 break;
             case("Award") :
-                attributeList = new String[]{"a.AwardName", "a.AwardYear", "a.MovieTitle",
-                        "a.MovieReleaseYear", "a.AwardWinner"};
+                attributeList = new String[]{"AwardName", "AwardYear", "MovieTitle",
+                        "MovieReleaseYear", "AwardWinner"};
                 break;
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(),

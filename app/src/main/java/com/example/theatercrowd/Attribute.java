@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link Attribute#newInstance} factory method to
@@ -120,7 +122,7 @@ public class Attribute extends Fragment {
             return false;
         }
         EditText value = getView().findViewById(R.id.edit_text_attribute);
-        if(value.getText().toString().equals("") || value.getText().toString() == null) {
+        if(value == null || value.getText() == null ||value.getText().toString().equals("")) {
             return false;
         }
         return true;
@@ -132,14 +134,14 @@ public class Attribute extends Fragment {
      * This will return NULL if values were not ready.
      * @return the values formatted as a SQL string
      */
-    public String retrieveValues() {
+    public String[] retrieveValues() {
         Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
         Spinner attribute = getActivity().findViewById(R.id.spinner_attribute);
         EditText value = getActivity().findViewById(R.id.edit_text_attribute);
         String logicalOperation = (String) logicalOp.getSelectedItem();
         String chosenAttribute = (String) attribute.getSelectedItem();
         String chosenValue = value.getText().toString();
-        String clause = createClause(logicalOperation, chosenAttribute, chosenValue);
+        String[] clause = createClause(logicalOperation, chosenAttribute, chosenValue);
         return clause;
     }
 
@@ -154,26 +156,12 @@ public class Attribute extends Fragment {
      *                    It remains as a string and is not evaluated in this method.
      * @return the fully formatted WHERE clause for a SQL string.
      */
-    private String createClause(String logicalOperator, String chosenAttribute, String chosenValue) {
-        String clause;
-        switch(logicalOperator) {
-            case("IS") :
-                return chosenAttribute + " = " + chosenValue;
-            case("ISNOT") :
-                return "NOT " + chosenAttribute + " = " + chosenValue;
-            case("AND") :
-            case("OR") :
-                return logicalOperator + " " + chosenAttribute + " = " + chosenValue;
-            case("ANDLESS") :
-                return "AND " + chosenAttribute + " < " + chosenValue;
-            case("ORLESS") :
-                return "OR " + chosenAttribute + " < " + chosenValue;
-            case("ANDMORE") :
-                return "AND " + chosenAttribute + " > " + chosenValue;
-            case("ORMORE") :
-                return "OR " + chosenAttribute + " > " + chosenValue;
-            default:
-                return null;
-        }
+    private String[] createClause(String logicalOperator, String chosenAttribute, String chosenValue) {
+        ArrayList<String> clauses = new ArrayList<>();
+        clauses.add(chosenAttribute);
+        clauses.add(chosenValue);
+        String[] relevantValues = new String[]{};
+        relevantValues = clauses.toArray(relevantValues);
+        return relevantValues;
     }
 }

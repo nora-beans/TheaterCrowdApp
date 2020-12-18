@@ -45,8 +45,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSubmit(View view) {
-        String statement = createSQLStatement(fragmentManager.getFragments());
+        String[] statement = createSQLStatement(fragmentManager.getFragments());
         if (statement != null) {
+            service = SQLService.getInstance();
+            service.
             //TODO: Move on to search activity and send this query to the SQLService.
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
@@ -68,9 +70,19 @@ public class MainActivity extends AppCompatActivity {
         query_length++;
     }
 
-    public String createSQLStatement(List<Fragment> fragments) {
-        String statement = "SELECT ";
-        String otherHalfOfStatement = "FROM ";
+    public String[] createSQLStatement(List<Fragment> fragments) {
+        //I need the following things
+        //String of comma separated tables
+        //String of comma separated columns
+        //String of comma separated COLUMNS for where clause
+        //String of comma separated VALUES for where clause
+        //Groupby
+        //Having
+        //Sort order
+        String statement = "";
+        String otherHalfOfStatement = "";
+        String filterColumns = "";
+        String filterValues = "";
         Set<String> objects = new HashSet<>();
         ArrayList<String> attributeStrings = new ArrayList<>();
         for(int i = 0; i < fragments.size(); i++) {
@@ -79,11 +91,13 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Not all fields have been filled yet.", Toast.LENGTH_SHORT).show();
             } else {
                 objects.add(query.getSelectedObjectType());
-                String attributeString = query.getAttributeStrings();
-                if(attributeString != null) {
-                    attributeStrings.add(attributeString);
-                } else {
-                    return null;
+                String[] attributeString = query.getAttributeStrings();
+                for(int j = 0; j < attributeString.length; j++) {
+                    if(j % 2 == 0) {
+                        filterColumns += attributeString[j] + ", ";
+                    } else {
+                        filterValues += attributeString[j] + ", ";
+                    }
                 }
             }
         }
@@ -95,14 +109,14 @@ public class MainActivity extends AppCompatActivity {
                 String object = iterator.next();
                 switch(object) {
                     case("Person") :
-                        statement += "p.Name";
-                        otherHalfOfStatement += "Person p";
+                        statement += "Name";
+                        otherHalfOfStatement += "Person";
                     case("Movie") :
-                        statement += "m.Title";
-                        otherHalfOfStatement += "Movie m";
+                        statement += "Title";
+                        otherHalfOfStatement += "Movie";
                     case("Award") :
-                        statement += "a.AwardName";
-                        otherHalfOfStatement += "Award a";
+                        statement += "AwardName";
+                        otherHalfOfStatement += "Award";
                 }
                 if (i != objects.size() - 1) {
                     statement += ",";
@@ -111,12 +125,8 @@ public class MainActivity extends AppCompatActivity {
                 statement += " ";
                 otherHalfOfStatement += " ";
             }
-            statement += otherHalfOfStatement + " WHERE ";
-            for(String attribute : attributeStrings) {
-                statement += attribute + " ";
-            }
+            String[] query = new String[]{statement, otherHalfOfStatement, filterColumns, filterValues};
+            return query;
         }
-        statement += ";";
-        return statement;
     }
 }

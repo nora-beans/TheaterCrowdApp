@@ -121,10 +121,10 @@ public class SQLQuery extends Fragment {
         return selectedObjectType;
     }
 
-    public String getAttributeStrings() {
+    public String[] getAttributeStrings() {
         FragmentManager fragmentManager = getChildFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
-        String filters = "";
+        ArrayList<String> filter = new ArrayList<>();
         for(int i = 0; i < fragments.size(); i++) {
             Attribute attribute = (Attribute) fragments.get(i);
             if(!attribute.areValuesReady()) {
@@ -133,10 +133,12 @@ public class SQLQuery extends Fragment {
                         Toast.LENGTH_SHORT).show();
                 return null;
             } else {
-                filters += attribute.retrieveValues() + " ";
+                String[] values = attribute.retrieveValues();
+                filter.add(values[0]);
+                filter.add(values[1]);
             }
         }
-        return filters;
+        return filter.toArray(new String[]{});
     }
 
 

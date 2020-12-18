@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,40 +52,58 @@ public class Attribute extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             objectType = getArguments().getString(OBJECT_TYPE);
+            if(objectType == null) {
+                Log.e("RHINO", "object type is null");
+                objectType = "Person";
+            }
+
         }
-        setSpinnerValues(objectType);
+
     }
 
     /**
      * Sets the spinner values based off of the type of searchable object that has been passed.
-     * @param objectType Either 'Person', 'Movie' or 'Award'
+     * @param
      */
-    private void setSpinnerValues(String objectType) {
-        Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
+    private void setSpinnerValues(View view) {
+        Spinner logicalOp = view.findViewById(R.id.spinner_logic);
         String[] logicalValues = new String[]{"AND", "OR", "ANDMORE", "ORMORE", "ANDLESS", "ORLESS"};
-        logicalOp.setAdapter(new ArrayAdapter<>(getActivity().getBaseContext(),
+        logicalOp.setAdapter(new ArrayAdapter<>(view.getContext(),
                 R.layout.support_simple_spinner_dropdown_item, logicalValues));
-        Spinner attributes = getActivity().findViewById(R.id.spinner_attribute);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getBaseContext(),
-                R.layout.support_simple_spinner_dropdown_item);
-        String[] attributeList;
+        Spinner attributes = view.findViewById(R.id.spinner_attribute);
+        String[] attributeList = new String[]{};
         switch(objectType) {
             case("Person") :
                 attributeList = new String[]{"p.Name", "p.Birthdate", "p.Nationality"};
+                break;
             case("Movie") :
                 attributeList = new String[]{"m.Title", "m.ReleaseYear", "m.Genre"};
+                break;
             case("Award") :
                 attributeList = new String[]{"a.AwardName", "a.AwardYear", "a.MovieTitle",
                         "a.MovieReleaseYear", "a.AwardWinner"};
-
+                break;
         }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(),
+                R.layout.support_simple_spinner_dropdown_item, attributeList);
+        attributes.setAdapter(adapter);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_attribute, container, false);
+        View view = inflater.inflate(R.layout.fragment_attribute, container, false);
+        if(objectType == null) {
+            objectType = "Person";
+        }
+        setSpinnerValues(view);
+        return view;
+    }
+
+    public void updateObjectType(String newType) {
+        objectType = newType;
+        setSpinnerValues(getView());
     }
 
     /** Checks to see if all values have been assigned yet.
@@ -92,15 +111,15 @@ public class Attribute extends Fragment {
      * @return true if all the values have a selected field. False otherwise.
      */
     public boolean areValuesReady() {
-        Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
+        Spinner logicalOp = getView().findViewById(R.id.spinner_logic);
         if(logicalOp.getSelectedItem() == null) {
             return false;
         }
-        Spinner attribute = getActivity().findViewById(R.id.spinner_attribute);
+        Spinner attribute = getView().findViewById(R.id.spinner_attribute);
         if(attribute.getSelectedItem() == null) {
             return false;
         }
-        EditText value = getActivity().findViewById(R.id.edit_text_attribute);
+        EditText value = getView().findViewById(R.id.edit_text_attribute);
         if(value.getText().toString().equals("") || value.getText().toString() == null) {
             return false;
         }
@@ -117,8 +136,8 @@ public class Attribute extends Fragment {
         Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
         Spinner attribute = getActivity().findViewById(R.id.spinner_attribute);
         EditText value = getActivity().findViewById(R.id.edit_text_attribute);
-        String logicalOperation = (String) ((TextView)logicalOp.getSelectedItem()).getText();
-        String chosenAttribute = (String) ((TextView)attribute.getSelectedItem()).getText();
+        String logicalOperation = (String) logicalOp.getSelectedItem();
+        String chosenAttribute = (String) attribute.getSelectedItem();
         String chosenValue = value.getText().toString();
         String clause = createClause(logicalOperation, chosenAttribute, chosenValue);
         return clause;

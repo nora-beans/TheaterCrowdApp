@@ -26,7 +26,7 @@ import java.util.List;
 public class SQLQuery extends Fragment {
 
     private Spinner objectType;
-    private String selectedObjectType;
+    private String selectedObjectType = "Person";
     private int filterNumber = 0;
 
     public SQLQuery() {
@@ -47,22 +47,37 @@ public class SQLQuery extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        objectType = getActivity().findViewById(R.id.spinner_object);
-        String[] objectTypeValues = new String[]{"Person", "Movie", "Award"};
-        setSpinnerValues(objectType, objectTypeValues);
-        objectType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedObjectType = (String) objectType.getSelectedItem();
-            }
-        });
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_s_q_l_query, container, false);
+        View view = inflater.inflate(R.layout.fragment_s_q_l_query, container, false);
+        objectType = (Spinner) view.findViewById(R.id.spinner_object);
+        String[] objectTypeValues = new String[]{"Person", "Movie", "Award"};
+        setSpinnerValues(objectType, objectTypeValues);
+        objectType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String oldSelection = selectedObjectType;
+                selectedObjectType = (String) objectType.getSelectedItem();
+                if(!oldSelection.equals(selectedObjectType)) {
+                    FragmentManager manager = getChildFragmentManager();
+                    List<Fragment> fragments = manager.getFragments();
+                    for(int i = 0; i < fragments.size(); i++) {
+                        ((Attribute) fragments.get(i)).updateObjectType(selectedObjectType);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        return view;
     }
 
     private void setSpinnerValues(Spinner spinner, String[] values) {

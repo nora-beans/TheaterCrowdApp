@@ -1,12 +1,20 @@
 package com.example.theatercrowd;
 
 import android.app.Service;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
+import java.util.Date;
+
 public class SQLService extends Service {
+
+
 
     @Nullable
     @Override
@@ -15,46 +23,53 @@ public class SQLService extends Service {
     }
 
     private static final String PEOPLE_NAME = "Name";
-    private static final Date PEOPLE_BIRTHDATE = "Birthdate";
+    private static final String PEOPLE_BIRTHDATE = "Birthdate";
     private static final String PEOPLE_BIO = "Biography";
     private static final String PEOPLE_NATIONALITY = "Nationality";
+    private static final String PEOPLE = "People";
     private static final String MOVIES_TITLE = "Title";
-    private static final Date MOVIES_RELEASEYEAR = "ReleaseYear";
+    private static final String MOVIES_RELEASEYEAR = "ReleaseYear";
     private static final String MOVIES_GENRE = "Genre";
     private static final String MOVIES_DESCRIPTION = "Description";
-    private static final Int MOVIEREVIEWS_REVIEWNUMBER = "ReviewNumber";
+    private static final String MOVIES = "Movies";
+    private static final String MOVIEREVIEWS_REVIEWNUMBER = "ReviewNumber";
     private static final String MOVIEREVIEWS_POSTERNICKNAME = "PosterNickname";
-    private static final Float MOVIEREVIEWS_MOVIESCORE = "MovieScore";
+    private static final String MOVIEREVIEWS_MOVIESCORE = "MovieScore";
     private static final String MOVIEREVIEWS_REVIEW = "Review";
+    private static final String MOVIEREVIEWS = "MovieReviews";
     private static final String AWARDS_AWARDNAME = "AwardName";
-    private static final Int AWARDS_AWARDYEAR = "AwardYear";
+    private static final String AWARDS_AWARDYEAR = "AwardYear";
     private static final String AWARDS_MOVIETITLE = "MovieTitle";
-    private static final Int AWARDS_MOVIERELEASEYEAR = "MovieReleaseYear";
+    private static final String AWARDS_MOVIERELEASEYEAR = "MovieReleaseYear";
     private static final String AWARDS_AWARDWINNER = "AwardWinner";
-    private static final Date AWARDS_AWARDWINNERBIRTHDATE = "AwardWinnerBirthDate";
-    private static final Int REVIEWS_REVIEWNUMBER = "ReviewNumber";
+    private static final String AWARDS_AWARDWINNERBIRTHDATE = "AwardWinnerBirthDate";
+    private static final String AWARDS = "Awards";
+    private static final String REVIEWS_REVIEWNUMBER = "ReviewNumber";
     private static final String REVIEWS_TITLE = "Title";
-    private static final Int REVIEWS_RELEASEYEAR = "ReleaseYear";
+    private static final String REVIEWS_RELEASEYEAR = "ReleaseYear";
+    private static final String REVIEWS = "Reviews";
     private static final String MOVIECREDITS_NAME = "Name";
-    private static final Date MOVIECREDITS_BIRTHDATE = "Date";
+    private static final String MOVIECREDITS_BIRTHDATE = "Date";
     private static final String MOVIECREDITS_MOVIETITLE = "MovieTitle";
-    private static final Int MOVIECREDITS_MOVIERELEASEYEAR = "MovieReleaseYear";
+    private static final String MOVIECREDITS_MOVIERELEASEYEAR = "MovieReleaseYear";
     private static final String MOVIECREDITS_ROLE = "Role";
+    private static final String MOVIECREDITS = "MovieCredits";
 
+    private MovieDbHelper dbHelper;
+    private SQLiteDatabase db;
 
-    public FeedReaderDbHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-    }
-
-    public void onCreate(SQLiteDatabase db) {
+    public void onCreate() {
+        dbHelper = new MovieDbHelper(getApplicationContext());
+        db = dbHelper.getWritableDatabase();
         db.execSQL(SQL_CREATE_TABLE_PEOPLE);
         db.execSQL(SQL_CREATE_TABLE_MOVIES);
-        db.execSQL(SQL_CREATE_TABLE_);
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
+        db.execSQL(SQL_CREATE_TABLE_MOVIEREVIEWS);
+        db.execSQL(SQL_CREATE_TABLE_AWARDS);
+        db.execSQL(SQL_CREATE_TABLE_REVIEWS);
+        db.execSQL(SQL_CREATE_TABLE_MOVIECREDITS);
         db.execSQL(SQL_CREATE_TABLE_PEOPLE);
     }
+
 
     private static final String SQL_CREATE_TABLE_PEOPLE =
             "CREATE TABLE People ( Name Text, Birthdate Date, Bio Text NOT NULL, Nationality Text, PRIMARY KEY (Name, Birthdate))";
@@ -63,7 +78,7 @@ public class SQLService extends Service {
             "CREATE TABLE Movies ( Title Text, ReleaseYear Smallint, Genre Text, Description Varchar (250), PRIMARY KEY (Title, ReleaseYear))";
 
     private static final String SQL_CREATE_TABLE_MOVIEREVIEWS =
-            "CREATE TABLE MovieReviews ( ReviewNumber Smallint AUTO_INCREMENT, PosterNickname Varchar(30) NOT NULL, MovieScore DECIMAL(1,2) UNSIGNED NOT NULL CHECK(MovieScore <= 10), Review Varchar (300) NOT NULL, PRIMARY KEY (ReviewNumber))";
+            "CREATE TABLE MovieReviews ( ReviewNumber Smallint, PosterNickname Varchar(30) NOT NULL, MovieScore DECIMAL(1,2)  NOT NULL CHECK(MovieScore <= 10), Review Varchar (300) NOT NULL, PRIMARY KEY (ReviewNumber))";
 
     private static final String SQL_CREATE_TABLE_AWARDS =
             "CREATE TABLE Awards ( AwardName Text, AwardYear Smallint, MovieTitle Text NOT NULL, MovieReleaseYear Smallint NOT NULL, AwardWinner Text, AwardWinnerBirthDate Date, PRIMARY KEY (AwardName, AwardYear), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear), FOREIGN KEY (AwardWinner, AwardWinnerBirthDate) REFERENCES People (Name, Birthdate),CHECK (AwardYear >= MovieReleaseYear))";
@@ -72,82 +87,75 @@ public class SQLService extends Service {
             "CREATE TABLE Reviews( ReviewNumber Smallint, Title Text, ReleaseYear Smallint, PRIMARY KEY (ReviewNumber, Title, ReleaseYear), FOREIGN KEY (ReviewNumber) REFERENCES MovieReviews(ReviewNumber), FOREIGN KEY (Title, ReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
 
     private static final String SQL_CREATE_TABLE_MOVIECREDITS =
-            "CREATE TABLE MovieCredit s( Name Text, Birthdate Date, MovieTitle Text, MovieReleaseYear Smallint, Role Text, PRIMARY KEY (Name, Birthdate, MovieTitle, MovieReleaseYear, Role), FOREIGN KEY (Name, Birthdate) REFERENCES People (Name, Birthdate), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
-
-    // Gets the data repository in write mode
-    SQLiteDatabase db = dbHelper.getWritableDatabase();
+            "CREATE TABLE MovieCredits ( Name Text, Birthdate Date, MovieTitle Text, MovieReleaseYear Smallint, Role Text, PRIMARY KEY (Name, Birthdate, MovieTitle, MovieReleaseYear, Role), FOREIGN KEY (Name, Birthdate) REFERENCES People (Name, Birthdate), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
 
 
-
-    public void insertPeople(string name, date birthdate, string bio, string nationality) {
+    public void insertPeople(String name, Date birthdate, String bio, String nationality) {
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.PEOPLE_NAME, name);
-        values.put(FeedEntry.PEOPLE_BIRTHDATE, birthdate);
-        values.put(FeedEntry.PEOPLE_BIO, bio);
-        values.put(FeedEntry.PEOPLE_NATIONALITY, nationality);
+        values.put(PEOPLE_NAME, name);
+        values.put(PEOPLE_BIRTHDATE, birthdate.toString());
+        values.put(PEOPLE_BIO, bio);
+        values.put(PEOPLE_NATIONALITY, nationality);
 
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedEntry.PEOPLE, null, values);
+        long newRowId = db.insert(PEOPLE, null, values);
     }
 
-    public void insertMovies(string title, int releaseYear, string genre, string description) {
+    public void insertMovies(String title, int releaseYear, String genre, String description) {
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.MOVIES_TITLE, title);
-        values.put(FeedEntry.MOVIES_RELEASEYEAR, releaseYear);
-        values.put(FeedEntry.MOVIES_GENRE, genre);
-        values.put(FeedEntry.MOVIES_DESCRIPTION, description);
+        values.put(MOVIES_TITLE, title);
+        values.put(MOVIES_RELEASEYEAR, releaseYear);
+        values.put(MOVIES_GENRE, genre);
+        values.put(MOVIES_DESCRIPTION, description);
 
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedEntry.MOVIES, null, values);
+        long newRowId = db.insert(MOVIES, null, values);
     }
 
-    public void insertMovieReviews(string name, date birthdate, string bio, string nationality) {
+
+    public void insertReviews(String title, int releaseYear, String posterNickname, float movieScore, String review) {
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.PEOPLE_NAME, name);
-        values.put(FeedEntry.PEOPLE_BIRTHDATE, birthdate);
-        values.put(FeedEntry.PEOPLE_BIO, bio);
-        values.put(FeedEntry.PEOPLE_NATIONALITY, nationality);
+        values.put(REVIEWS_TITLE, title);
+        values.put(REVIEWS_RELEASEYEAR, releaseYear);
 
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedEntry.MOVIEREVIEWS, null, values);
+        long newRowId = db.insert(REVIEWS, null, values);
+        insertMovieReviews(posterNickname, movieScore, review);
     }
 
-    public void insertReviews(string name, date birthdate, string bio, string nationality) {
+    public void insertMovieReviews(String posterNickname, float movieScore, String review) {
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.PEOPLE_NAME, name);
-        values.put(FeedEntry.PEOPLE_BIRTHDATE, birthdate);
-        values.put(FeedEntry.PEOPLE_BIO, bio);
-        values.put(FeedEntry.PEOPLE_NATIONALITY, nationality);
+        values.put(MOVIEREVIEWS_POSTERNICKNAME, posterNickname);
+        values.put(MOVIEREVIEWS_MOVIESCORE, movieScore);
+        values.put(MOVIEREVIEWS_REVIEW, review);
 
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedEntry.PEOPLE, null, values);
+        long newRowId = db.insert(MOVIEREVIEWS, null, values);
     }
 
-    public void insertAwards(string awardName, int awardYear, string movieTitle, int movieReleaseYear, string awardWinner, date awardWinnerBirthdate) {
+    public void insertAwards(String awardName, int awardYear, String movieTitle, int movieReleaseYear, String awardWinner, Date awardWinnerBirthdate) {
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.AWARDS_AWARDNAME, awardName);
-        values.put(FeedEntry.AWARDS_AWARDYEAR, awardYear);
-        values.put(FeedEntry.AWARDS_MOVIETITLE, movieTitle);
-        values.put(FeedEntry.AWARDS_MOVIERELEASEYEAR, movieReleaseYear);
-        values.put(FeedEntry.AWARDS_AWARDWINNER, awardWinner);
-        values.put(FeedEntry.AWARDS_AWARDWINNERBIRTHDATE, awardWinnerBirthdate);
+        values.put(AWARDS_AWARDNAME, awardName);
+        values.put(AWARDS_AWARDYEAR, awardYear);
+        values.put(AWARDS_MOVIETITLE, movieTitle);
+        values.put(AWARDS_MOVIERELEASEYEAR, movieReleaseYear);
+        values.put(AWARDS_AWARDWINNER, awardWinner);
+        values.put(AWARDS_AWARDWINNERBIRTHDATE, awardWinnerBirthdate.toString());
 
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedEntry.AWARDS, null, values);
+        long newRowId = db.insert(AWARDS, null, values);
     }
 
-    public void insertMovieCredits(string name, date birthdate, string movieTitle, int movieReleaseYear, string role) {
+    public void insertMovieCredits(String name, Date birthdate, String movieTitle, int movieReleaseYear, String role) {
         ContentValues values = new ContentValues();
-        values.put(FeedEntry.MOVIECREDITS_NAME, name);
-        values.put(FeedEntry.MOVIECREDITS_BIRTHDATE, birthdate);
-        values.put(FeedEntry.MOVIECREDITS_MOVIETITLE, movieTitle);
-        values.put(FeedEntry.MOVIECREDITS_MOVIERELEASEYEAR, movieReleaseYear);
-        values.put(FeedEntry.MOVIECREDITS_ROLE, role);
+        values.put(MOVIECREDITS_NAME, name);
+        values.put(MOVIECREDITS_BIRTHDATE, birthdate.toString());
+        values.put(MOVIECREDITS_MOVIETITLE, movieTitle);
+        values.put(MOVIECREDITS_MOVIERELEASEYEAR, movieReleaseYear);
+        values.put(MOVIECREDITS_ROLE, role);
 
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedEntry.MOVIECREDITS, null, values);
+        long newRowId = db.insert(MOVIECREDITS, null, values);
     }
-=======
 
->>>>>>> ce3313531189eb43a9a74462f1da25e20fe65006
 }

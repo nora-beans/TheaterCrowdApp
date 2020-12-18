@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
@@ -11,7 +12,11 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import static java.lang.Boolean.TRUE;
 
 public class SQLService extends Service {
 
@@ -115,6 +120,7 @@ public class SQLService extends Service {
 
 
     public void insertPeople(String name, Date birthdate, String bio, String nationality) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(PEOPLE_NAME, name);
         values.put(PEOPLE_BIRTHDATE, birthdate.toString());
@@ -126,6 +132,7 @@ public class SQLService extends Service {
     }
 
     public void insertMovies(String title, int releaseYear, String genre, String description) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(MOVIES_TITLE, title);
         values.put(MOVIES_RELEASEYEAR, releaseYear);
@@ -138,6 +145,7 @@ public class SQLService extends Service {
 
 
     public void insertReviews(String title, int releaseYear, String posterNickname, float movieScore, String review) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(REVIEWS_TITLE, title);
         values.put(REVIEWS_RELEASEYEAR, releaseYear);
@@ -148,6 +156,7 @@ public class SQLService extends Service {
     }
 
     public void insertMovieReviews(String posterNickname, float movieScore, String review) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(MOVIEREVIEWS_POSTERNICKNAME, posterNickname);
         values.put(MOVIEREVIEWS_MOVIESCORE, movieScore);
@@ -158,6 +167,7 @@ public class SQLService extends Service {
     }
 
     public void insertAwards(String awardName, int awardYear, String movieTitle, int movieReleaseYear, String awardWinner, Date awardWinnerBirthdate) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(AWARDS_AWARDNAME, awardName);
         values.put(AWARDS_AWARDYEAR, awardYear);
@@ -171,6 +181,7 @@ public class SQLService extends Service {
     }
 
     public void insertMovieCredits(String name, Date birthdate, String movieTitle, int movieReleaseYear, String role) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(MOVIECREDITS_NAME, name);
         values.put(MOVIECREDITS_BIRTHDATE, birthdate.toString());
@@ -181,4 +192,82 @@ public class SQLService extends Service {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(MOVIECREDITS, null, values);
     }
+
+    public void updateRow(String tableName, String[] columnsToUpdate, String[] valuesToUpdate) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String title = "MyNewTitle";
+        ContentValues values = new ContentValues();
+        values.put(FeedEntry.COLUMN_NAME_TITLE, title);
+
+        // Which row to update, based on the title
+        String selection = FeedEntry.COLUMN_NAME_TITLE + " LIKE ?";
+        String[] selectionArgs = { "MyOldTitle" };
+
+        int count = db.update(
+                tableName,
+                values,
+                selection,
+                selectionArgs);
+    }
+
+    public List<String>[] selectRows(String[] selectQuery) {
+        ArrayList <String> projection = new ArrayList<>();
+        String individualValue = "";
+            for(int i = 0; i < selectQuery[1].length(); i++) {
+                if(selectQuery[1].charAt(i) == ',') {
+                    projection.add(individualValue);
+                    individualValue = "";
+                    i++;
+                } else {
+                    individualValue += selectQuery[1].charAt(i);
+                }
+            }
+            String[] returnColumns = new String[]{};
+         returnColumns = projection.toArray(returnColumns);
+
+        ArrayList <String> selectionArguments = new ArrayList<>();
+        String currentString = "";
+        for(int j = 0; j < selectQuery[3].length(); j++) {
+            if(selectQuery[3].charAt(j) == ',') {
+                projection.add(individualValue);
+                currentString = "";
+                j++;
+            } else {
+                currentString += selectQuery[3].charAt(j);
+            }
+        }
+        String[] selectionArgs = new String[]{};
+        selectionArgs = selectionArguments.toArray(returnColumns);
+
+
+        Cursor cursor = db.query(
+                selectQuery[0],                         // The tables to query
+                returnColumns,                          // The array of columns to return (pass null to get all)
+                selectQuery[2],                         // The columns for the WHERE clause
+                selectionArgs,                          // The values for the WHERE clause
+                selectQuery[4],                         // how to group the rows group the rows
+                selectQuery[5],                         // how to filter by row groups
+                selectQuery[6]                          // What you are sorting on + " ASC" or " DESC"
+        );
+
+        int sizeOfResults = 0;
+        int k;
+
+        while(cursor.moveToNext()) {
+            sizeOfResults++;
+        }
+        List<String>[] queryResults = new List[sizeOfResults];
+        cursor.moveToFirst();                                       //Resets the count of the cursor object
+        int j = 0;
+        while(cursor.moveToNext()) {                                //
+            for(k = 0; k < returnColumns.length; k++) {
+                String str = cursor.getString(cursor.getColumnIndexOrThrow(returnColumns[k]));
+                queryResults[j].add(str);
+            }
+            j++;
+        }
+        cursor.close();
+        return queryResults;
+    }
+
 }

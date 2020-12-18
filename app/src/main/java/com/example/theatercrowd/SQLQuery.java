@@ -3,15 +3,20 @@ package com.example.theatercrowd;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -21,6 +26,8 @@ import java.util.ArrayList;
 public class SQLQuery extends Fragment {
 
     private Spinner objectType;
+    private String selectedObjectType;
+    private int filterNumber = 0;
 
     public SQLQuery() {
         // Required empty public constructor
@@ -32,7 +39,6 @@ public class SQLQuery extends Fragment {
      *
      * @return A new instance of fragment SQLQuery.
      */
-    // TODO: Rename and change types and number of parameters
     public static SQLQuery newInstance() {
         SQLQuery fragment = new SQLQuery();
         return fragment;
@@ -43,7 +49,13 @@ public class SQLQuery extends Fragment {
         super.onCreate(savedInstanceState);
         objectType = getActivity().findViewById(R.id.spinner_object);
         String[] objectTypeValues = new String[]{"Person", "Movie", "Award"};
-        setSpinnerValues(objectType, objectTypeValues );
+        setSpinnerValues(objectType, objectTypeValues);
+        objectType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedObjectType = (String) objectType.getSelectedItem();
+            }
+        });
     }
 
     @Override
@@ -56,4 +68,49 @@ public class SQLQuery extends Fragment {
     private void setSpinnerValues(Spinner spinner, String[] values) {
         spinner.setAdapter(new ArrayAdapter(getContext(), R.layout.support_simple_spinner_dropdown_item, values));
     }
+
+    public void addFilter(View view) {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(Attribute.newInstance(selectedObjectType), "" + filterNumber);
+        filterNumber++;
+    }
+
+    public boolean checkIfReady() {
+        if(selectedObjectType == null) {
+            return false;
+        }
+        FragmentManager fragmentManager = getChildFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        for(int i = 0; i < fragments.size(); i++) {
+            if(!((Attribute)fragments.get(i)).areValuesReady()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public String getSelectedObjectType() {
+        return selectedObjectType;
+    }
+
+    public String getAttributeStrings() {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        String filters = "";
+        for(int i = 0; i < fragments.size(); i++) {
+            Attribute attribute = (Attribute) fragments.get(i);
+            if(!attribute.areValuesReady()) {
+                Toast.makeText(getActivity().getBaseContext(),
+                        "Some values have been left unfilled. Please fill them.",
+                        Toast.LENGTH_SHORT).show();
+                return null;
+            } else {
+                filters += attribute.retrieveValues() + " ";
+            }
+        }
+        return filters;
+    }
+
+
 }

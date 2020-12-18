@@ -70,12 +70,12 @@ public class Attribute extends Fragment {
         String[] attributeList;
         switch(objectType) {
             case("Person") :
-                attributeList = new String[]{"Name", "Birthdate", "Nationality"};
+                attributeList = new String[]{"p.Name", "p.Birthdate", "p.Nationality"};
             case("Movie") :
-                attributeList = new String[]{"Title", "Release Year", "Genre"};
+                attributeList = new String[]{"m.Title", "m.ReleaseYear", "m.Genre"};
             case("Award") :
-                attributeList = new String[]{"Award Name", "Award Year", "Movie Title",
-                        "Movie Release Year", "Award Winner"};
+                attributeList = new String[]{"a.AwardName", "a.AwardYear", "a.MovieTitle",
+                        "a.MovieReleaseYear", "a.AwardWinner"};
 
         }
     }

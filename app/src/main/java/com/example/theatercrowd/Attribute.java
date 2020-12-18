@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -51,6 +52,32 @@ public class Attribute extends Fragment {
         if (getArguments() != null) {
             objectType = getArguments().getString(OBJECT_TYPE);
         }
+        setSpinnerValues(objectType);
+    }
+
+    /**
+     * Sets the spinner values based off of the type of searchable object that has been passed.
+     * @param objectType Either 'Person', 'Movie' or 'Award'
+     */
+    private void setSpinnerValues(String objectType) {
+        Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
+        String[] logicalValues = new String[]{"AND", "OR", "ANDMORE", "ORMORE", "ANDLESS", "ORLESS"};
+        logicalOp.setAdapter(new ArrayAdapter<>(getActivity().getBaseContext(),
+                R.layout.support_simple_spinner_dropdown_item, logicalValues));
+        Spinner attributes = getActivity().findViewById(R.id.spinner_attribute);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getBaseContext(),
+                R.layout.support_simple_spinner_dropdown_item);
+        String[] attributeList;
+        switch(objectType) {
+            case("Person") :
+                attributeList = new String[]{"Name", "Birthdate", "Nationality"};
+            case("Movie") :
+                attributeList = new String[]{"Title", "Release Year", "Genre"};
+            case("Award") :
+                attributeList = new String[]{"Award Name", "Award Year", "Movie Title",
+                        "Movie Release Year", "Award Winner"};
+
+        }
     }
 
     @Override
@@ -60,6 +87,10 @@ public class Attribute extends Fragment {
         return inflater.inflate(R.layout.fragment_attribute, container, false);
     }
 
+    /** Checks to see if all values have been assigned yet.
+     * This MUST be run before running retrieve values
+     * @return true if all the values have a selected field. False otherwise.
+     */
     public boolean areValuesReady() {
         Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
         if(logicalOp.getSelectedItem() == null) {
@@ -93,9 +124,24 @@ public class Attribute extends Fragment {
         return clause;
     }
 
+    /**
+     * Formats and creates the string to be returned in retrieveValues
+     * @param logicalOperator is the logical operator that determines how the string is formatted
+     *                        anything that starts with AND will start with AND, anything that starts
+     *                        with OR will start with OR. If that's the end, it's an equals string.
+     *                        If it is followed by MORE or LESS, then it will have > or < respectively
+     * @param chosenAttribute is the attribute that is being compared
+     * @param chosenValue is the value the user input. It can be either text (ie. ABCDE) or a number.
+     *                    It remains as a string and is not evaluated in this method.
+     * @return the fully formatted WHERE clause for a SQL string.
+     */
     private String createClause(String logicalOperator, String chosenAttribute, String chosenValue) {
         String clause;
         switch(logicalOperator) {
+            case("IS") :
+                return chosenAttribute + " = " + chosenValue;
+            case("ISNOT") :
+                return "NOT " + chosenAttribute + " = " + chosenValue;
             case("AND") :
             case("OR") :
                 return logicalOperator + " " + chosenAttribute + " = " + chosenValue;

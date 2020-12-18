@@ -2,6 +2,7 @@ package com.example.theatercrowd;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -58,20 +59,6 @@ public class MainActivity extends AppCompatActivity {
         transaction.setReorderingAllowed(true);
         transaction.commitNow();
         query_length++;
-    }
-
-    public void addFilter(View view) {
-        String tag = view.getTag().toString();
-        SQLQuery fragment = (SQLQuery) fragmentManager.findFragmentByTag(tag);
-        if(fragment == null) {
-            try {
-                throw new Exception("addFilter is broken. oops");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            fragment.addFilter(view);
-        }
     }
 
     public String createSQLStatement(List<Fragment> fragments) {

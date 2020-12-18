@@ -6,11 +6,12 @@
 
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <androidx.fragment.app.FragmentContainerView
+    <LinearLayout
         android:id="@+id/fragment_container_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical" />
 
         <Button
             android:id="@+id/search_button"

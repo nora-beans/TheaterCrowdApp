@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -77,6 +79,13 @@ public class SQLQuery extends Fragment {
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+        Button button = view.findViewById(R.id.filter_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addFilter();
+            }
+        });
         return view;
     }
 
@@ -84,10 +93,13 @@ public class SQLQuery extends Fragment {
         spinner.setAdapter(new ArrayAdapter(getContext(), R.layout.support_simple_spinner_dropdown_item, values));
     }
 
-    public void addFilter(View view) {
+    public void addFilter() {
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(Attribute.newInstance(selectedObjectType), "" + filterNumber);
+        Bundle bundle = new Bundle();
+        bundle.putString("Object_Type",selectedObjectType);
+        transaction.add(R.id.linear_layout_query, Attribute.class, bundle);
+        transaction.commitNow();
         filterNumber++;
     }
 

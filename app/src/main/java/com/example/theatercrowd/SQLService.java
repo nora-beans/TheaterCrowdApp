@@ -7,6 +7,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 public class SQLService extends Service {
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -146,4 +147,7 @@ public class SQLService extends Service {
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(FeedEntry.MOVIECREDITS, null, values);
     }
+=======
+
+>>>>>>> ce3313531189eb43a9a74462f1da25e20fe65006
 }

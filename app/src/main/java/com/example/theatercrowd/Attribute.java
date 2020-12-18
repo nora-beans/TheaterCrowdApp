@@ -67,7 +67,7 @@ public class Attribute extends Fragment {
      */
     private void setSpinnerValues(View view) {
         Spinner logicalOp = view.findViewById(R.id.spinner_logic);
-        String[] logicalValues = new String[]{"AND", "OR", "ANDMORE", "ORMORE", "ANDLESS", "ORLESS"};
+        String[] logicalValues = new String[]{"AND", "OR", "ANDMORE", "ORMORE", "ANDLESS", "ORLESS", "IS", "ISNOT"};
         logicalOp.setAdapter(new ArrayAdapter<>(view.getContext(),
                 R.layout.support_simple_spinner_dropdown_item, logicalValues));
         Spinner attributes = view.findViewById(R.id.spinner_attribute);

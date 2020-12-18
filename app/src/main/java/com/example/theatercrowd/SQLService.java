@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -14,7 +15,17 @@ import java.util.Date;
 
 public class SQLService extends Service {
 
+    public static SQLService instance;
 
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("Rhino", "Inside onStartCommand");
+        int started = super.onStartCommand(intent, flags, startId);
+        onCreate();
+        setInstance();
+        return started;
+    }
 
     @Nullable
     @Override
@@ -59,35 +70,48 @@ public class SQLService extends Service {
     private SQLiteDatabase db;
 
     public void onCreate() {
+        Log.d("Rhino", "onCreate has been called in SQLService");
+        setInstance();
         dbHelper = new MovieDbHelper(getApplicationContext());
         db = dbHelper.getWritableDatabase();
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
-        db.execSQL(SQL_CREATE_TABLE_MOVIES);
-        db.execSQL(SQL_CREATE_TABLE_MOVIEREVIEWS);
-        db.execSQL(SQL_CREATE_TABLE_AWARDS);
-        db.execSQL(SQL_CREATE_TABLE_REVIEWS);
-        db.execSQL(SQL_CREATE_TABLE_MOVIECREDITS);
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
+            db.execSQL(SQL_CREATE_TABLE_PEOPLE);
+            db.execSQL(SQL_CREATE_TABLE_MOVIES);
+            db.execSQL(SQL_CREATE_TABLE_MOVIEREVIEWS);
+            db.execSQL(SQL_CREATE_TABLE_AWARDS);
+            db.execSQL(SQL_CREATE_TABLE_REVIEWS);
+            db.execSQL(SQL_CREATE_TABLE_MOVIECREDITS);
+    }
+    private void setInstance() {
+        instance = this;
+    }
+
+    public static SQLService getInstance() {
+        if(instance == null) {
+            Log.d("Rhino", "This ain't it, chief");
+        } else {
+            Log.d("Rhino", "Operation Singleton Design worked aight.");
+        }
+        return instance;
     }
 
 
     private static final String SQL_CREATE_TABLE_PEOPLE =
-            "CREATE TABLE People ( Name Text, Birthdate Date, Bio Text NOT NULL, Nationality Text, PRIMARY KEY (Name, Birthdate))";
+            "CREATE TABLE IF NOT EXISTS People ( Name Text, Birthdate Date, Bio Text NOT NULL, Nationality Text, PRIMARY KEY (Name, Birthdate))";
 
     private static final String SQL_CREATE_TABLE_MOVIES =
-            "CREATE TABLE Movies ( Title Text, ReleaseYear Smallint, Genre Text, Description Varchar (250), PRIMARY KEY (Title, ReleaseYear))";
+            "CREATE TABLE IF NOT EXISTS Movies ( Title Text, ReleaseYear Smallint, Genre Text, Description Varchar (250), PRIMARY KEY (Title, ReleaseYear))";
 
     private static final String SQL_CREATE_TABLE_MOVIEREVIEWS =
-            "CREATE TABLE MovieReviews ( ReviewNumber Smallint, PosterNickname Varchar(30) NOT NULL, MovieScore DECIMAL(1,2)  NOT NULL CHECK(MovieScore <= 10), Review Varchar (300) NOT NULL, PRIMARY KEY (ReviewNumber))";
+            "CREATE TABLE IF NOT EXISTS MovieReviews ( ReviewNumber Smallint, PosterNickname Varchar(30) NOT NULL, MovieScore DECIMAL(1,2)  NOT NULL CHECK(MovieScore <= 10), Review Varchar (300) NOT NULL, PRIMARY KEY (ReviewNumber))";
 
     private static final String SQL_CREATE_TABLE_AWARDS =
-            "CREATE TABLE Awards ( AwardName Text, AwardYear Smallint, MovieTitle Text NOT NULL, MovieReleaseYear Smallint NOT NULL, AwardWinner Text, AwardWinnerBirthDate Date, PRIMARY KEY (AwardName, AwardYear), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear), FOREIGN KEY (AwardWinner, AwardWinnerBirthDate) REFERENCES People (Name, Birthdate),CHECK (AwardYear >= MovieReleaseYear))";
+            "CREATE TABLE IF NOT EXISTS Awards ( AwardName Text, AwardYear Smallint, MovieTitle Text NOT NULL, MovieReleaseYear Smallint NOT NULL, AwardWinner Text, AwardWinnerBirthDate Date, PRIMARY KEY (AwardName, AwardYear), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear), FOREIGN KEY (AwardWinner, AwardWinnerBirthDate) REFERENCES People (Name, Birthdate),CHECK (AwardYear >= MovieReleaseYear))";
 
     private static final String SQL_CREATE_TABLE_REVIEWS =
-            "CREATE TABLE Reviews( ReviewNumber Smallint, Title Text, ReleaseYear Smallint, PRIMARY KEY (ReviewNumber, Title, ReleaseYear), FOREIGN KEY (ReviewNumber) REFERENCES MovieReviews(ReviewNumber), FOREIGN KEY (Title, ReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
+            "CREATE TABLE IF NOT EXISTS Reviews( ReviewNumber Smallint, Title Text, ReleaseYear Smallint, PRIMARY KEY (ReviewNumber, Title, ReleaseYear), FOREIGN KEY (ReviewNumber) REFERENCES MovieReviews(ReviewNumber), FOREIGN KEY (Title, ReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
 
     private static final String SQL_CREATE_TABLE_MOVIECREDITS =
-            "CREATE TABLE MovieCredits ( Name Text, Birthdate Date, MovieTitle Text, MovieReleaseYear Smallint, Role Text, PRIMARY KEY (Name, Birthdate, MovieTitle, MovieReleaseYear, Role), FOREIGN KEY (Name, Birthdate) REFERENCES People (Name, Birthdate), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
+            "CREATE TABLE IF NOT EXISTS MovieCredits ( Name Text, Birthdate Date, MovieTitle Text, MovieReleaseYear Smallint, Role Text, PRIMARY KEY (Name, Birthdate, MovieTitle, MovieReleaseYear, Role), FOREIGN KEY (Name, Birthdate) REFERENCES People (Name, Birthdate), FOREIGN KEY (MovieTitle, MovieReleaseYear) REFERENCES Movies (Title, ReleaseYear))";
 
 
     public void insertPeople(String name, Date birthdate, String bio, String nationality) {

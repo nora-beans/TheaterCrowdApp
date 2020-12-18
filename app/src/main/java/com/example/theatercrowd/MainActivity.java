@@ -6,8 +6,12 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -22,11 +26,16 @@ public class MainActivity extends AppCompatActivity {
 
     FragmentManager fragmentManager;
     int query_length = 1;
+    SQLService service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Intent intent = new Intent(this, SQLService.class);
+        Log.d("Rhino", "Inside Main Activity onCreate");
+        startService(intent);
+        Log.d("Rhino", "Intent to start service sent");
         fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(R.id.fragment_container_view, SQLQuery.class, null);
@@ -37,9 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSubmit(View view) {
         String statement = createSQLStatement(fragmentManager.getFragments());
-        if(statement == null) {
-            return;
-        } else {
+        if (statement != null) {
             //TODO: Move on to search activity and send this query to the SQLService.
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();

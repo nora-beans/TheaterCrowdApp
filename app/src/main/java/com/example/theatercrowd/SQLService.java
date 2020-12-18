@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -19,7 +20,17 @@ import static java.lang.Boolean.TRUE;
 
 public class SQLService extends Service {
 
+    public static SQLService instance;
 
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("Rhino", "Inside onStartCommand");
+        int started = super.onStartCommand(intent, flags, startId);
+        onCreate();
+        setInstance();
+        return started;
+    }
 
     @Nullable
     @Override
@@ -64,15 +75,28 @@ public class SQLService extends Service {
     private SQLiteDatabase db;
 
     public void onCreate() {
+        Log.d("Rhino", "onCreate has been called in SQLService");
+        setInstance();
         dbHelper = new MovieDbHelper(getApplicationContext());
         db = dbHelper.getWritableDatabase();
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
-        db.execSQL(SQL_CREATE_TABLE_MOVIES);
-        db.execSQL(SQL_CREATE_TABLE_MOVIEREVIEWS);
-        db.execSQL(SQL_CREATE_TABLE_AWARDS);
-        db.execSQL(SQL_CREATE_TABLE_REVIEWS);
-        db.execSQL(SQL_CREATE_TABLE_MOVIECREDITS);
-        db.execSQL(SQL_CREATE_TABLE_PEOPLE);
+            db.execSQL(SQL_CREATE_TABLE_PEOPLE);
+            db.execSQL(SQL_CREATE_TABLE_MOVIES);
+            db.execSQL(SQL_CREATE_TABLE_MOVIEREVIEWS);
+            db.execSQL(SQL_CREATE_TABLE_AWARDS);
+            db.execSQL(SQL_CREATE_TABLE_REVIEWS);
+            db.execSQL(SQL_CREATE_TABLE_MOVIECREDITS);
+    }
+    private void setInstance() {
+        instance = this;
+    }
+
+    public static SQLService getInstance() {
+        if(instance == null) {
+            Log.d("Rhino", "This ain't it, chief");
+        } else {
+            Log.d("Rhino", "Operation Singleton Design worked aight.");
+        }
+        return instance;
     }
 
 
@@ -186,37 +210,64 @@ public class SQLService extends Service {
                 selectionArgs);
     }
 
-    public void selectRows(String[] selectQuery) {
-        String queiredTables = tableNames[0];
-            for(int i=1; i<tableNames.length; i++) {
-                   queiredTables += ", " + tableNames[i];
+    public List<String>[] selectRows(String[] selectQuery) {
+        ArrayList <String> projection = new ArrayList<>();
+        String individualValue = "";
+            for(int i = 0; i < selectQuery[1].length(); i++) {
+                if(selectQuery[1].charAt(i) == ',') {
+                    projection.add(individualValue);
+                    individualValue = "";
+                    i++;
+                } else {
+                    individualValue += selectQuery[1].charAt(i);
+                }
             }
-        String sortOrder = "";
-            if(sortAsc == TRUE) {
-                sortOrder = sortAttribute + " ASC";
+            String[] returnColumns = new String[]{};
+         returnColumns = projection.toArray(returnColumns);
+
+        ArrayList <String> selectionArguments = new ArrayList<>();
+        String currentString = "";
+        for(int j = 0; j < selectQuery[3].length(); j++) {
+            if(selectQuery[3].charAt(j) == ',') {
+                projection.add(individualValue);
+                currentString = "";
+                j++;
+            } else {
+                currentString += selectQuery[3].charAt(j);
             }
-            else {
-                sortOrder = sortAttribute + " DESC";
-            }
+        }
+        String[] selectionArgs = new String[]{};
+        selectionArgs = selectionArguments.toArray(returnColumns);
+
 
         Cursor cursor = db.query(
-                queiredTables,                  // The tables to query
-                requestedColumns,               // The array of columns to return (pass null to get all)
-                selectionColumn,                // The columns for the WHERE clause
-                selectionArguments,             // The values for the WHERE clause
-                groupBy,                        // how to group the rows group the rows
-                having,                         // how to filter by row groups
-                sortOrder                       // What you are sorting on + " ASC" or " DESC"
+                selectQuery[0],                         // The tables to query
+                returnColumns,                          // The array of columns to return (pass null to get all)
+                selectQuery[2],                         // The columns for the WHERE clause
+                selectionArgs,                          // The values for the WHERE clause
+                selectQuery[4],                         // how to group the rows group the rows
+                selectQuery[5],                         // how to filter by row groups
+                selectQuery[6]                          // What you are sorting on + " ASC" or " DESC"
         );
 
-        List itemIds = new ArrayList<>();
+        int sizeOfResults = 0;
+        int k;
+
         while(cursor.moveToNext()) {
-            long itemId = cursor.getLong(
-                    cursor.getColumnIndexOrThrow());
-                    cursor.getString(itemId);
-            itemIds.add(itemId);
+            sizeOfResults++;
+        }
+        List<String>[] queryResults = new List[sizeOfResults];
+        cursor.moveToFirst();                                       //Resets the count of the cursor object
+        int j = 0;
+        while(cursor.moveToNext()) {                                //
+            for(k = 0; k < returnColumns.length; k++) {
+                String str = cursor.getString(cursor.getColumnIndexOrThrow(returnColumns[k]));
+                queryResults[j].add(str);
+            }
+            j++;
         }
         cursor.close();
+        return queryResults;
     }
 
 }

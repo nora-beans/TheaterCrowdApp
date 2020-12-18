@@ -2,6 +2,7 @@ package com.example.theatercrowd;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -26,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         fragmentManager = getSupportFragmentManager();
-        Fragment fragment = SQLQuery.newInstance();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(fragment, "Query_" + query_length);
+        transaction.add(R.id.fragment_container_view, SQLQuery.class, null);
+        transaction.setReorderingAllowed(true);
         transaction.commitNow();
         query_length++;
     }
@@ -52,25 +54,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onAddFragment(View view) {
-        Fragment fragment = SQLQuery.newInstance();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(fragment, "Query_" + query_length);
+        transaction.add(R.id.fragment_container_view, SQLQuery.class, null);
+        transaction.setReorderingAllowed(true);
         transaction.commitNow();
         query_length++;
-    }
-
-    public void addFilter(View view) {
-        String tag = view.getTag().toString();
-        SQLQuery fragment = (SQLQuery) fragmentManager.findFragmentByTag(tag);
-        if(fragment == null) {
-            try {
-                throw new Exception("addFilter is broken. oops");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            fragment.addFilter(view);
-        }
     }
 
     public String createSQLStatement(List<Fragment> fragments) {
@@ -95,9 +83,10 @@ public class MainActivity extends AppCompatActivity {
         if(objects.size() == 0) {
             return null;
         } else {
-            String[] objectArr = (String[]) objects.toArray();
-            for(int i = 0; i < objectArr.length; i++) {
-                switch(objectArr[i]) {
+            Iterator<String> iterator = objects.iterator();
+            for(int i = 0; i < objects.size(); i++) {
+                String object = iterator.next();
+                switch(object) {
                     case("Person") :
                         statement += "p.Name";
                         otherHalfOfStatement += "Person p";
@@ -108,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                         statement += "a.AwardName";
                         otherHalfOfStatement += "Award a";
                 }
-                if (i != objectArr.length - 1) {
+                if (i != objects.size() - 1) {
                     statement += ",";
                     otherHalfOfStatement += ",";
                 }

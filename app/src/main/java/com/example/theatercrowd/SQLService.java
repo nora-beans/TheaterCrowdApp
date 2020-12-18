@@ -15,7 +15,7 @@ public class SQLService extends Service {
     }
 
     private static final String PEOPLE_NAME = "Name";
-    private static final Date PEOPLE_BIRTHDATE = "Birthdate";
+    private static final String PEOPLE_BIRTHDATE = "Birthdate";
     private static final String PEOPLE_BIO = "Biography";
     private static final String PEOPLE_NATIONALITY = "Nationality";
     private static final String MOVIES_TITLE = "Title";

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,13 +51,6 @@ public class Attribute extends Fragment {
         if (getArguments() != null) {
             objectType = getArguments().getString(OBJECT_TYPE);
         }
-        Spinner logic = getActivity().findViewById(R.id.spinner_logic);
-        logic.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-        });
     }
 
     @Override
@@ -66,12 +60,55 @@ public class Attribute extends Fragment {
         return inflater.inflate(R.layout.fragment_attribute, container, false);
     }
 
-    public String retireveValues() {
+    public boolean areValuesReady() {
+        Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
+        if(logicalOp.getSelectedItem() == null) {
+            return false;
+        }
+        Spinner attribute = getActivity().findViewById(R.id.spinner_attribute);
+        if(attribute.getSelectedItem() == null) {
+            return false;
+        }
+        EditText value = getActivity().findViewById(R.id.edit_text_attribute);
+        if(value.getText().toString().equals("") || value.getText().toString() == null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Retrieves the values of the attributes and returns them in the correct SQL format.
+     * NOTE: THIS DOES *NOT* CHECK if there are values selected/available. Please run areValuesReady() first.
+     * This will return NULL if values were not ready.
+     * @return the values formatted as a SQL string
+     */
+    public String retrieveValues() {
         Spinner logicalOp = getActivity().findViewById(R.id.spinner_logic);
         Spinner attribute = getActivity().findViewById(R.id.spinner_attribute);
         EditText value = getActivity().findViewById(R.id.edit_text_attribute);
-        String clause = "";
+        String logicalOperation = (String) ((TextView)logicalOp.getSelectedItem()).getText();
+        String chosenAttribute = (String) ((TextView)attribute.getSelectedItem()).getText();
+        String chosenValue = value.getText().toString();
+        String clause = createClause(logicalOperation, chosenAttribute, chosenValue);
+        return clause;
+    }
 
-        return null;
+    private String createClause(String logicalOperator, String chosenAttribute, String chosenValue) {
+        String clause;
+        switch(logicalOperator) {
+            case("AND") :
+            case("OR") :
+                return logicalOperator + " " + chosenAttribute + " = " + chosenValue;
+            case("ANDLESS") :
+                return "AND " + chosenAttribute + " < " + chosenValue;
+            case("ORLESS") :
+                return "OR " + chosenAttribute + " < " + chosenValue;
+            case("ANDMORE") :
+                return "AND " + chosenAttribute + " > " + chosenValue;
+            case("ORMORE") :
+                return "OR " + chosenAttribute + " > " + chosenValue;
+            default:
+                return null;
+        }
     }
 }

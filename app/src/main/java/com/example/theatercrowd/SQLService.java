@@ -7,9 +7,12 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 public class SQLService extends Service {
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+
 }
